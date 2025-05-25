@@ -1,11 +1,147 @@
-export const signup = (req, res) => {
-    res.send("signup");
+import User from "../models/userModel.js";
+import bcrypt from "bcryptjs";
+import s3Client from "../lib/s3.js";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { generateToken, generateFileName } from "../lib/utils.js";
+import { rmSync } from "fs";
+
+
+
+
+export const signup = async (req, res) => {
+    const {name, email, password} = req.body;
+
+    try {
+        if (!name || !email || !password) {
+            res.status(400).json({ message: "All fields are required."});
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters."});
+        };
+    
+        const user = await User.findOne({email});
+    
+        if (user) {
+            return res.status(400).json({ message: "Email already exists."});
+        };
+    
+        const salt = await bcrypt.genSalt(10);
+        const hashedPass = await bcrypt.hash(password, salt);
+    
+        const newUser = new User({
+            name,
+            email,
+            password: hashedPass,
+        });
+    
+        if (newUser) {
+            generateToken(newUser._id, res);
+            await newUser.save();
+            res.status(201).json({ 
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                profilePic: newUser.profilePic
+            });
+        } else {
+            return res.status(400).json({ message: "Invalid user data."})
+        }
+
+    } catch (err) {
+        console.log("Error in signup controller: ", err.message);
+        return res.status(500).json({ message: "Internal Server Error"});
+    }
 };
 
 export const logout = (req, res) => {
-    res.send("logout");
+    try {
+        res.clearCookie("jwt");
+        return res.status(200).json({ message: "Logged out"});
+
+    } catch (err) {
+        console.log("Error in logout controller: ", err.message);
+        return res.status(500).json({ message: "Internal Server Error"});
+    }
 };
 
-export const login = (req, res) => {
-    res.send("login");
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    try{
+        if (!email || !password) {
+            return res.status(400).json({ message: "All fields required"});
+        }
+
+        const user = await User.findOne({email});
+
+        if (!user) {
+            return res.status(400).json({ message: "Email or Password is incorrect"});
+        }
+
+        const hashedPass = user.password;
+        const correct = await bcrypt.compare(password, hashedPass);
+
+        if (!correct) {
+            return res.status(400).json({ message: "Email or Password is incorrect"});
+        } else {
+            generateToken(user._id, res);
+            return res.status(200).json({ message: "Logged in"});
+        }
+
+    } catch (err) {
+        console.log("Error in login controller: ", err.message);
+        return res.status(500).json({ message: "Internal Server Error"});
+    }
+
 };
+
+export const updateProfilePic = async (req, res) => {
+    const userId = req.user._id;
+    const file = req.file;
+
+    try {
+        if (!file) {
+            return res.status(400).json({ message: "Profile picture is required"});
+        }
+
+        const prevUser = User.findById(userId);
+        const prevFilename = prevUser.profilePic;
+
+        if (!prevUser) {
+            return res.status(400).json({ message: "User not found"});
+        }
+
+        if (prevFilename !== "") { 
+            const deleteParam = {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: prevFilename
+            }
+
+            const command = new DeleteObjectCommand(deleteParam);
+            await s3Client.send(command);
+        }
+
+        const fileName = generateFileName();
+        const uploadParam = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Body: file.buffer,
+            Key: fileName,
+            ContentType: file.mimetype
+        };
+
+        await s3Client.send(new PutObjectCommand(uploadParam));
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profilePic: fileName},
+            { new: true }
+        );
+
+        if (updatedUser) {
+           return res.status(200).json(updatedUser)
+        }
+    } catch (err) {
+        console.log(`Error in update profile picture controller: ${err.message}`);
+        res.status(500).json({ message: "Internal Server Error"});
+    }
+}
