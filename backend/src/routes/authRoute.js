@@ -1,14 +1,16 @@
 import express from "express";
 import multer from "multer";
-import { login, logout, signup, updateProfilePic } from "../controllers/authController.js";
+import { checkAuth, login, logout, signup, updateProfilePic } from "../controllers/authController.js";
+import { protectRoute } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage});
 
 router.post("/signup", signup);
-router.get("/login", login);
-router.get("/logout", logout);
-router.put("/updateProfilePic", upload.single('profilePic'), updateProfilePic);
+router.post("/login", login);
+router.post("/logout", logout);
+router.put("/updateProfilePic", protectRoute, upload.single('profilePic'), updateProfilePic);
+router.get("/check", protectRoute, checkAuth)
 
 export default router;

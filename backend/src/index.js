@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import { connectDB } from "./lib/db.js";
 import authRoute from "./routes/authRoute.js";
+import messageRoute from "./routes/messageRoute.js";
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/auth", authRoute);
+app.use("/message", messageRoute);
 
 app.listen(PORT, () => {
     console.log(`Chime Listening on Port ${PORT}`);
