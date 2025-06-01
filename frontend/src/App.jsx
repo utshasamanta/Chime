@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
+import { Toaster } from "react-hot-toast"
 
 
 const App = () => {
@@ -37,8 +38,9 @@ const App = () => {
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />}/>
         <Route path="/settings" element={<SettingsPage />}/>
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />}/>
-
       </Routes>
+
+      <Toaster></Toaster>
     </div>
   )
 }

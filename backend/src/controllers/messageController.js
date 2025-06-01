@@ -31,15 +31,15 @@ export const getMessages = async (req, res) => {
         });
 
         for (let msg of messages) {
-            if (msg.media) {
+            if (msg.media && msg.mediaUrl === "") {
                 const getObjectParam = {
                     Bucket: process.env.S3_BUCKET_NAME,
                     Key: msg.media
                 };
                 
                 const command = new GetObjectCommand(getObjectParam);
-                const url = await getSignedUrl(s3Client, command, {expiresIn:3600});
-                msg.media = url;
+                const url = await getSignedUrl(s3Client, command, {expiresIn:8640000});
+                msg.mediaUrl = url;
             }
         }
 
@@ -62,7 +62,7 @@ export const sendMessage = async (req, res) => {
 
         let filename;
         if (file) {
-            filename = generateFileName();
+            filename = `messages/${req.user.email}/${generateFileName()}`;
             const uploadParam = {
                 Bucket: process.env.S3_BUCKET_NAME,
                 Body: file.buffer,
@@ -82,6 +82,7 @@ export const sendMessage = async (req, res) => {
 
         await newMessage.save();
     } catch (err) {
-
+        console.log("Error in sendMessage controller: ", error.message);
+        return res.status(500).json({ error: "Internal server error" });
     }
 }

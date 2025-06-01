@@ -1,7 +1,8 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import s3Client from "../lib/s3.js";
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { generateToken, generateFileName } from "../lib/utils.js";
 
 
@@ -82,7 +83,10 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Email or Password is incorrect"});
         } else {
             generateToken(user._id, res);
-            return res.status(200).json({ message: "Logged in"});
+            const userObj = user.toObject();
+            delete userObj.password;
+            console.log("Logged In")
+            return res.status(200).json(userObj);
         }
 
     } catch (err) {
@@ -101,12 +105,13 @@ export const updateProfilePic = async (req, res) => {
             return res.status(400).json({ message: "Profile picture is required"});
         }
 
-        const prevUser = User.findById(userId);
-        const prevFilename = prevUser.profilePic;
+        const prevUser = await User.findById(userId);
 
         if (!prevUser) {
             return res.status(400).json({ message: "User not found"});
         }
+
+        const prevFilename = prevUser.profilePic;
 
         if (prevFilename !== "") { 
             const deleteParam = {
@@ -118,7 +123,9 @@ export const updateProfilePic = async (req, res) => {
             await s3Client.send(command);
         }
 
-        const fileName = generateFileName();
+        const ext = file.originalname.split('.').pop();
+        let fileName = generateFileName();
+        fileName = `profile-pics/${prevUser.email}/${fileName}.${ext}`;
         const uploadParam = {
             Bucket: process.env.S3_BUCKET_NAME,
             Body: file.buffer,
@@ -128,11 +135,19 @@ export const updateProfilePic = async (req, res) => {
 
         await s3Client.send(new PutObjectCommand(uploadParam));
 
+        const getObjectParam = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: fileName
+        };
+                        
+        const getCommand = new GetObjectCommand(getObjectParam);
+        const signedUrl = await getSignedUrl(s3Client, getCommand, {expiresIn:864000});
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { profilePic: fileName},
+            { profilePic: fileName, profilePicUrl: signedUrl},
             { new: true }
-        );
+        ).select("-password");
 
         if (updatedUser) {
            return res.status(200).json(updatedUser)

@@ -17,6 +17,10 @@ const messageSchema = new mongoose.Schema({
     media: {
         type: String
     },
+    mediaUrl: {
+        type: String,
+        default: ""
+    }
 }, {timestamps: true});
 
 const Message = mongoose.model("Message", messageSchema);

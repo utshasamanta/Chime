@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Link } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern";
+import toast from "react-hot-toast";
+import logo from "../assets/chime2.png";
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,11 +18,21 @@ const SignupPage = () => {
     const { signup, isSigningUp } = useAuthStore();
 
     const validateForm = () => {
+        if (!formData.name.trim()) return toast.error("Full name is required");
+        if (!formData.email.trim()) return toast.error("Email is required");
+        if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email");
+        if (!formData.password) return toast.error("Password is required");
+        if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
 
+        return true;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const validForm = validateForm();
+
+        if (validForm === true) signup(formData);
     }
 
 
@@ -30,8 +42,9 @@ const SignupPage = () => {
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center mb-8">
                         <div className="flex flex-col items-center gap-2 group">
-                            <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                <MessageSquare className="size-6 text-primary"></MessageSquare>
+                            <div className="size-20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all">
+                                {/* <MessageSquare className="size-6 text-primary"></MessageSquare> */}
+                                <img src={logo} alt="Chime Logo" className="size-30 text-primary"/>
                             </div>
                             <h1 className="text-2xl font-bold mt-2">Create Account</h1>
                             <p className="text-base-content/60">Get Started with your account</p>
