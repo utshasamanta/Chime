@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 });
 
 app.use("/auth", authRoute);
-app.use("/message", messageRoute);
+app.use("/messages", messageRoute);
 
 app.listen(PORT, () => {
     console.log(`Chime Listening on Port ${PORT}`);

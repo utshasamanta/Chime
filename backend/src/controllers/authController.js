@@ -141,7 +141,7 @@ export const updateProfilePic = async (req, res) => {
         };
                         
         const getCommand = new GetObjectCommand(getObjectParam);
-        const signedUrl = await getSignedUrl(s3Client, getCommand, {expiresIn:864000});
+        const signedUrl = await getSignedUrl(s3Client, getCommand, {expiresIn:604799});
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
