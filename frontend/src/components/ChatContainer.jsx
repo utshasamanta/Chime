@@ -45,19 +45,19 @@ const ChatContainer = () => {
                         key={msg._id}
                         className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
                     >
-                        <div className="chat-image avatar">
+                        {/* <div className="chat-image avatar">
                             <div className="size-10 rounded-full border">
                                 <img 
                                     src={msg.senderId === authUser._id ? authUser.profilePicUrl || "/avatar.png" : selectedUser.profilePicUrl || "/avatar.png"} 
                                     alt="Profile Pic" 
                                 />
                             </div>
-                        </div>
+                        </div> */}
                         <div className="chat-header mb-1">
                             <time className="text-xs opacity-50 ml-1">{formatMessageTime(msg.createdAt)}</time>
                         </div>
 
-                        <div className="chat-bubble flex flex-col gap-6">
+                        <div className={`chat-bubble flex flex-col gap-6 ${msg.senderId === authUser._id ? "bg-primary text-primary-content" : "bg-base-200"}`}>
                             {msg.mediaUrl && (
                                 <img 
                                     src={"/avatar.png"}
@@ -65,7 +65,7 @@ const ChatContainer = () => {
                                     className="sm:max-w-[200px] rounded-md mb-2"
                                 />
                             )}
-                            {msg.text && <p>{msg.text}</p>}
+                            {msg.text && <p className={msg.senderId === authUser._id ? "text-primary-content/70" : "text-base-content/70"}>{msg.text}</p>}
                         </div>
                     </div>
                 ))}
