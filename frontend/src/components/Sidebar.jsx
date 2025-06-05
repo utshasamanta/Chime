@@ -20,14 +20,14 @@ const Sidebar = () => {
     if (isLoadingUser) return <SidebarSkeleton />;
 
     return (
-        <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
+        <aside className="h-full w-20 md:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
             <div className="border-b border-base-300 w-full p-5">
                 <div className="flex items-center gap-2">
                     <Users className="size-6"/>
                     <span className="font-medium hidden lg:block">Contacts</span>
                 </div>
 
-                <div className="mt-3 hidden lg:flex items-center gap-2">
+                <div className="mt-3 hidden md:flex items-center gap-2">
                     <label className="cursor-pointer flex items-center gap-2">
                         <input
                             type="checkbox"
@@ -48,7 +48,7 @@ const Sidebar = () => {
                         className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors ${selectedUser?.id === u._id ? "bg-base-300 ring-1 ring-base-300" : ""}`}
                         onClick={() => setSelectedUser(u)}
                     >
-                        <div className="relative mx-auto lg:mx-0">
+                        <div className="relative mx-auto md:mx-0">
                             <img src={u.profilePicUrl || "/avatar.png"} alt={u.name} className="size-12 object-cover rounded-full"/>
 
                             {onlineUsers.includes(u._id) && (
@@ -56,7 +56,7 @@ const Sidebar = () => {
                             )}
                         </div>
 
-                        <div className="hidden lg:block text-left min-w-0">
+                        <div className="hidden md:block text-left min-w-0">
                             <div className="font-medium truncate">{u.name}</div>
                             <div className="text-sm text-zinc-400">
                                 {onlineUsers.includes(u._id) ? "Online" : "Offline"}
