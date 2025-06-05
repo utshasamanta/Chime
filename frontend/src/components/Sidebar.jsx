@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore"
 import SidebarSkeleton from "./skeleton/SidebarSkeleton";
 import { Users } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useState } from "react";
 
 const Sidebar = () => {
     const { getUsers, users, selectedUser, setSelectedUser, isLoadingUser } = useChatStore();
@@ -12,6 +13,10 @@ const Sidebar = () => {
         getUsers()
     }, [getUsers]);
 
+    const [showOnlineOnly, setOnlineOnly] = useState(false);
+
+    const filteredUsers = showOnlineOnly ? users.filter(u => onlineUsers.includes(u._id)) : users;
+
     if (isLoadingUser) return <SidebarSkeleton />;
 
     return (
@@ -20,11 +25,24 @@ const Sidebar = () => {
                 <div className="flex items-center gap-2">
                     <Users className="size-6"/>
                     <span className="font-medium hidden lg:block">Contacts</span>
+                </div>
+
+                <div className="mt-3 hidden lg:flex items-center gap-2">
+                    <label className="cursor-pointer flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={showOnlineOnly}
+                            onChange={(e) => setOnlineOnly(e.target.checked)}
+                            className="checkbox checkbox-sm"
+                        />
+                        <span className="text-sm">Show online only</span>    
+                    </label>
+                    <span className="text-xs text-zinc-500">{onlineUsers.length - 1} online</span>    
                 </div>           
             </div>
 
             <div className="overflow-y-auto w-full py-3">
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                     <button
                         key={u._id}
                         className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors ${selectedUser?.id === u._id ? "bg-base-300 ring-1 ring-base-300" : ""}`}
@@ -46,6 +64,10 @@ const Sidebar = () => {
                         </div>
                     </button>
                 ))}
+
+                {filteredUsers.length === 0 && (
+                    <div className="text-center text-zinc-500 py-4">No online users</div>
+                )}
             </div>
         </aside>
     )

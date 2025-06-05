@@ -4,8 +4,7 @@ import s3Client from "../lib/s3.js";
 import { generateFileName } from "../lib/utils.js";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { url } from "inspector";
-
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 
 export const getUserForSidebar = async (req, res) => {
@@ -92,6 +91,12 @@ export const sendMessage = async (req, res) => {
         })
 
         await newMessage.save();
+
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverId){
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
+        
         return res.status(201).json(newMessage);
     } catch (err) {
         console.log("Error in sendMessage controller: ", err.message);

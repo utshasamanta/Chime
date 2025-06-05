@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore"
 import ChatHeader from "./ChatHeader";
 import MessageSkeleton from "./skeleton/MessageSkeleton";
@@ -7,12 +7,23 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/util";
 
 const ChatContainer = () => {
-    const { messages, getMessages, isLoadingMessages, selectedUser } = useChatStore();
+    const { messages, getMessages, isLoadingMessages, selectedUser, subscribeToMessage, unsubscribeMessage } = useChatStore();
     const { authUser } = useAuthStore();
 
     useEffect(() => {
         getMessages(selectedUser._id);
-    }, [selectedUser._id, getMessages])
+        subscribeToMessage();
+        
+        return () => unsubscribeMessage();
+    }, [selectedUser._id, getMessages, subscribeToMessage, unsubscribeMessage])
+
+    const bottomRef = useRef(null);
+
+    useEffect(() => {
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
 
     if (isLoadingMessages) {
         return (
@@ -58,6 +69,7 @@ const ChatContainer = () => {
                         </div>
                     </div>
                 ))}
+                <div ref={bottomRef}></div>
             </div>
 
             <MessageInput />

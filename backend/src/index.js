@@ -7,10 +7,12 @@ import cors from "cors";
 import { connectDB } from "./lib/db.js";
 import authRoute from "./routes/authRoute.js";
 import messageRoute from "./routes/messageRoute.js";
+import { app, server } from "./lib/socket.js";
 
 dotenv.config();
-const app = express();
 const PORT = process.env.PORT;
+
+
 app.use(express.json()); //lets us get the req body as a json
 app.use(cookieParser()) // lets us see the cookie in requests
 app.use(cors({
@@ -27,7 +29,7 @@ app.get('/', (req, res) => {
 app.use("/auth", authRoute);
 app.use("/messages", messageRoute);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Chime Listening on Port ${PORT}`);
     connectDB();
 });
