@@ -56,8 +56,8 @@ export const sendMessage = async (req, res) => {
     const { text } = req.body;
     const file = req.file;
     try {
-        if (!text) {
-            return res.status(400).json({ message: "Text is required"});
+        if (!text && !file) {
+            return res.status(400).json({ message: "Content is required"});
         }
 
         let filename = "";

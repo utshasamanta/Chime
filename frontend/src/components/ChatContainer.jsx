@@ -60,7 +60,7 @@ const ChatContainer = () => {
                         <div className={`chat-bubble flex flex-col gap-6 ${msg.senderId === authUser._id ? "bg-primary text-primary-content" : "bg-base-200"}`}>
                             {msg.mediaUrl && (
                                 <img 
-                                    src={"/avatar.png"}
+                                    src={msg.mediaUrl}
                                     alt="attachment"
                                     className="sm:max-w-[200px] rounded-md mb-2"
                                 />
