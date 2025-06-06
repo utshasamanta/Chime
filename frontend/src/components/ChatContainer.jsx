@@ -62,7 +62,7 @@ const ChatContainer = () => {
                                 <img 
                                     src={msg.mediaUrl}
                                     alt="attachment"
-                                    className="sm:max-w-[200px] rounded-md mb-2"
+                                    className="w-full max-w-xs sm:max-w-[200px] rounded-md mb-2"
                                 />
                             )}
                             {msg.text && <p className={msg.senderId === authUser._id ? "text-primary-content/70" : "text-base-content/70"}>{msg.text}</p>}
